@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>BMI_testbench_single.v 逐行深度解析文档</title>
+<title>BMI 数字芯片仿真测试平台总览 & 逐行解析（进阶版）</title>
 <style>
   :root {
     --bg: #f8fafc;
@@ -16,6 +16,8 @@
     --primary-light: #eff6ff;
     --accent: #0d9488;
     --accent-light: #f0fdfa;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
     --warn: #d97706;
     --warn-light: #fffbeb;
     --code-bg: #1e293b;
@@ -38,6 +40,8 @@
     --primary-light: #1e3a8a33;
     --accent: #2dd4bf;
     --accent-light: #134e4a33;
+    --purple: #a78bfa;
+    --purple-light: #4c1d9533;
     --warn: #fbbf24;
     --warn-light: #78350f33;
     --code-bg: #0f172a;
@@ -58,10 +62,63 @@
     transition: background 0.2s, color 0.2s;
   }
 
+  /* Global Module Switcher Top Bar */
+  .global-nav {
+    background: #090d16;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.55rem 0;
+    font-size: 0.84rem;
+  }
+
+  .global-nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .brand-title {
+    color: #93c5fd;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .module-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .module-tabs a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.32rem 0.72rem;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .module-tabs a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .module-tabs a.active {
+    background: #2563eb;
+    color: #fff;
+    border-color: #3b82f6;
+    font-weight: 600;
+  }
+
   header {
     background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
     color: #fff;
-    padding: 2.5rem 1.5rem 2rem;
+    padding: 2.25rem 1.5rem 2.2rem;
     border-bottom: 1px solid #334155;
   }
 
@@ -106,7 +163,7 @@
     margin: 0;
     color: #cbd5e1;
     font-size: 0.98rem;
-    max-width: 820px;
+    max-width: 850px;
   }
 
   .theme-btn {
@@ -151,7 +208,7 @@
   }
 
   .metric-val {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--primary);
     margin: 0.2rem 0;
@@ -161,6 +218,74 @@
   .metric-desc {
     font-size: 0.83rem;
     color: var(--text-muted);
+  }
+
+  /* Portal Cards for Sub-modules */
+  .portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .portal-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .portal-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  }
+
+  .portal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .portal-tag {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .portal-arrow {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .portal-card h3 {
+    margin: 0.25rem 0 0.45rem;
+    font-size: 1.08rem;
+  }
+
+  .portal-card p {
+    margin: 0 0 0.85rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+
+  .portal-meta {
+    font-size: 0.78rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--accent);
+    font-weight: 600;
   }
 
   /* Sticky Navigation & Controls */
@@ -279,6 +404,11 @@
     border-left-color: var(--warn);
   }
 
+  .callout.info {
+    background: var(--purple-light);
+    border-left-color: var(--purple);
+  }
+
   /* Diagrams */
   .diagram-wrap {
     overflow-x: auto;
@@ -355,7 +485,7 @@
   }
 
   td.ln {
-    width: 54px;
+    width: 58px;
     text-align: right;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     color: var(--text-muted);
@@ -365,7 +495,7 @@
   }
 
   td.code-col {
-    width: 44%;
+    width: 45%;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     background: var(--code-bg);
     color: var(--code-text);
@@ -400,6 +530,11 @@
     color: var(--text-muted);
   }
 
+  .tag.accent {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
   .kw { color: var(--kw); font-weight: 600; }
   .num { color: var(--num); }
   .cmt { color: var(--cmt); font-style: italic; }
@@ -410,9 +545,39 @@
     margin-bottom: 0.75rem;
   }
 
+  /* Bottom Page Pager */
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .pager a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.15rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .pager a:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
   footer {
     text-align: center;
-    padding: 2rem 1rem 3rem;
+    padding: 1.5rem 1rem 3rem;
     color: var(--text-muted);
     font-size: 0.85rem;
   }
@@ -420,19 +585,32 @@
 </head>
 <body>
 
+<div class="global-nav">
+  <div class="container global-nav-inner">
+    <div class="brand-title">🧬 BMI_digital_sakata · 仿真测试平台文档库</div>
+    <nav class="module-tabs">
+      <a href="index.html" class="active">🏠 顶层主控 (BMI_testbench_single)</a>
+      <a href="com_enable_guide.html" class="">⏱️ 通信使能 (COM_ENABLE_tb)</a>
+      <a href="select_guide.html" class="">🔀 总线选择 (SELECT_tb)</a>
+      <a href="com_con_out_guide.html" class="">📡 数据回传 (COM_CON_OUT_tb)</a>
+    </nav>
+  </div>
+</div>
+
+
 <header>
   <div class="container">
     <div class="header-top">
       <div>
         <div class="badge-row">
-          <span class="badge">Verilog HDL Testbench</span>
-          <span class="badge">BMI 脑机接口数字控制芯片</span>
+          <span class="badge">进阶多模块导航版 · v2.0</span>
+          <span class="badge">Verilog HDL Testbench Suite</span>
+          <span class="badge">BMI 脑机接口双向通信芯片</span>
           <span class="badge">10 MHz 时钟 · 1ns/1ns</span>
-          <span class="badge">UART帧 + 曼彻斯特编码</span>
         </div>
-        <h1>BMI_testbench_single.v 逐行代码深度解析</h1>
+        <h1>BMI 数字控制芯片 Testbench 进阶解析主页</h1>
         <p class="subtitle">
-          全面拆解脑机接口（Brain-Machine Interface）Stimulator/Recording 数字芯片功能仿真测试平台，涵盖时钟与复位生成、400-bit 电刺激与光遗传参数打包、10-bit 串行发送状态机激励以及单线曼彻斯特编码输出。
+          集成了顶层下行指令激励（<code>BMI_testbench_single.v</code>）与三大上行通信核心子模块测试平台（<code>COM_ENABLE_tb</code>、<code>SELECT_tb</code>、<code>COM_CON_OUT_tb</code>）的交互式技术文档库，支持一键跳转查阅各子模块逐行代码与时序图解。
         </p>
       </div>
       <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙 切换深色模式</button>
@@ -443,24 +621,24 @@
 <div class="container">
   <div class="metrics-grid">
     <div class="metric-card">
-      <div class="metric-label">系统时钟频率 (CLK)</div>
-      <div class="metric-val">10 MHz (100 ns)</div>
-      <div class="metric-desc">高电平 50ns + 低电平 50ns，占空比 50%</div>
+      <div class="metric-label">顶层主控平台</div>
+      <div class="metric-val">BMI_testbench_single</div>
+      <div class="metric-desc">400-bit 配置下发 + 曼彻斯特编码 (MAN)</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">指令寄存器位宽</div>
-      <div class="metric-val">400 bits (35 Bytes)</div>
-      <div class="metric-desc">每 10 位为一个发送槽位，低 8 位存放有效数据</div>
+      <div class="metric-label">子模块 01 · 通信使能</div>
+      <div class="metric-val">COM_ENABLE_tb</div>
+      <div class="metric-desc">避开 ADC 采样窗口、延迟调度 ENABLE</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">串行通信帧格式</div>
-      <div class="metric-val">1 + 8 + 1 (10-bit)</div>
-      <div class="metric-desc">起始位 0 + 8 位数据（低位在前 LSB）+ 停止位 1</div>
+      <div class="metric-label">子模块 02 · 仲裁选择</div>
+      <div class="metric-val">SELECT_tb</div>
+      <div class="metric-desc">CLK25 四分频门控与多路地址/数据选通</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">物理层编码输出 (MAN)</div>
-      <div class="metric-val">CLK ~^ IN</div>
-      <div class="metric-desc">时钟与数据的同或（XNOR）曼彻斯特单线编码</div>
+      <div class="metric-label">子模块 03 · 测量回传</div>
+      <div class="metric-val">COM_CON_OUT_tb</div>
+      <div class="metric-desc">12-bit 光/电采集数据打包与串行输出</div>
     </div>
   </div>
 </div>
@@ -468,7 +646,8 @@
 <div class="toolbar">
   <div class="container toolbar-inner">
     <nav class="nav-links">
-      <a href="#sec-arch">架构与帧图解</a>
+      <a href="#sec-hub">子模块跳转导航</a>
+      <a href="#sec-arch">下行协议图解</a>
       <a href="#sec-1">1. 模块与参数</a>
       <a href="#sec-2">2. 时钟与变量</a>
       <a href="#sec-3">3. 设备参数打包</a>
@@ -476,7 +655,7 @@
       <a href="#sec-5">5. 启动与曼彻斯特编码</a>
     </nav>
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="搜索行号、信号名或说明（如 ele_p、MAN、RST、327）..." oninput="filterRows()" />
+      <input type="text" id="searchInput" placeholder="搜索当前页行号、信号名或说明..." oninput="filterRows()" />
     </div>
   </div>
 </div>
@@ -484,11 +663,63 @@
 <div class="container">
   <div id="filterStatus" class="filter-status" style="display:none;"></div>
 
+  <!-- Sub-module Hub Section -->
+  <section class="section-card" id="sec-hub">
+    <div class="section-header">
+      <h2>🧭 子模块测试平台导航枢纽（点击卡片进入独立详细解析页）</h2>
+      <span class="line-range">4 Modules Linked</span>
+    </div>
+
+    <div class="callout info">
+      <strong>全芯片双向通信闭环关系：</strong><br/>
+      1. <strong>下行配置与触发（本页 <code>BMI_testbench_single</code>）</strong>：外部控制器通过单线曼彻斯特编码 <code>MAN</code> 向芯片写入电刺激（<code>ele_p/ele_n</code>）与光刺激（<code>opt</code>）参数，并发送广播地址启动工作。<br/>
+      2. <strong>上行数据回传（下方三个子模块）</strong>：芯片完成生理信号采样后，由 <code>COM_ENABLE</code> 避开 ADC 噪声期生成 <code>ENABLE</code> 窗口 → <code>SELECT</code> 在 <code>CLK25</code> 节拍下仲裁设备地址与通道 → <code>COM_CON_OUT</code> 将 12-bit 光学（<code>DATA_OPT</code>）和电学（<code>DATA_ELE</code>）数据串行打包输出到 <code>OUT</code>。
+    </div>
+
+    <div class="portal-grid">
+      <a class="portal-card" href="com_enable_guide.html">
+        <div>
+          <div class="portal-top">
+            <span class="portal-tag">COM_ENABLE_tb.v</span>
+            <span class="portal-arrow">查看详情 →</span>
+          </div>
+          <h3>⏱️ 通信使能与延迟调度模块</h3>
+          <p>解析如何利用 <code>initial fork...join</code> 模拟多周期 <code>ADC_state</code> 采样脉冲，结合 <code>DELAY=4'b0101</code> 与 <code>def_delay=10'd250</code> 控制上行通信窗口 <code>ENABLE</code> 与分频时钟 <code>CLK25</code>。</p>
+        </div>
+        <div class="portal-meta">关键信号：ADC_state · DELAY · def_delay · ENABLE</div>
+      </a>
+
+      <a class="portal-card" href="select_guide.html">
+        <div>
+          <div class="portal-top">
+            <span class="portal-tag">SELECT_tb.v</span>
+            <span class="portal-arrow">查看详情 →</span>
+          </div>
+          <h3>🔀 设备地址选通与总线仲裁模块</h3>
+          <p>解析 4 位计数器 <code>CLK25_divider</code>（10MHz → 2.5MHz 四分频选通脉冲）、芯片地址匹配（<code>ADDRESS=8'b1000_0001</code>）以及 <code>2μs~28μs</code> 使能窗口内的并串地址/控制字路由机制。</p>
+        </div>
+        <div class="portal-meta">关键信号：CLK25 · ADDRESS(0x81) · P/S_ADDRESS · comcon_out</div>
+      </a>
+
+      <a class="portal-card" href="com_con_out_guide.html">
+        <div>
+          <div class="portal-top">
+            <span class="portal-tag">COM_CON_OUT_tb.v</span>
+            <span class="portal-arrow">查看详情 →</span>
+          </div>
+          <h3>📡 光/电双模态测量数据串行输出模块</h3>
+          <p>解析偏置稳定标志 <code>S_Bias_OPT</code> / <code>S_Bias_ELE</code> 的多周期激励时序，以及 8-bit 地址与 12-bit 光学/电学 ADC 数据（<code>12'h441</code>）的握手使能与 <code>OUT</code> 串行发包流程。</p>
+        </div>
+        <div class="portal-meta">关键信号：S_Bias_OPT/ELE · DATA_OPT/ELE[11:0] · OUT</div>
+      </a>
+    </div>
+  </section>
+
   <!-- 架构与协议图解 -->
   <section class="section-card" id="sec-arch">
     <div class="section-header">
-      <h2>📊 核心协议与数据结构图解</h2>
-      <span class="line-range">硬件行为速览</span>
+      <h2>📊 顶层下行协议与 400-bit 寄存器结构图解</h2>
+      <span class="line-range">BMI_testbench_single.v</span>
     </div>
 
     <div class="callout">
@@ -507,7 +738,6 @@
           .in  { stroke: #0d9488; stroke-width: 2.2; fill: none; }
           .man { stroke: #d97706; stroke-width: 2.2; fill: none; }
         </style>
-        <!-- Grid lines every 70px = 1 CLK cycle -->
         <line x1="90" y1="15" x2="90" y2="155" class="grid"/>
         <line x1="160" y1="15" x2="160" y2="155" class="grid"/>
         <line x1="230" y1="15" x2="230" y2="155" class="grid"/>
@@ -520,12 +750,10 @@
         <line x1="720" y1="15" x2="720" y2="155" class="grid"/>
         <line x1="790" y1="15" x2="790" y2="155" class="grid"/>
 
-        <!-- Labels -->
         <text x="15" y="42" class="lbl">CLK</text>
         <text x="15" y="92" class="lbl">IN</text>
         <text x="15" y="142" class="lbl">MAN</text>
 
-        <!-- Bit headers -->
         <text x="103" y="14" class="sub">Start(0)</text>
         <text x="180" y="14" class="sub">Bit[0]</text>
         <text x="250" y="14" class="sub">Bit[1]</text>
@@ -537,7 +765,6 @@
         <text x="670" y="14" class="sub">Bit[7]</text>
         <text x="735" y="14" class="sub">Stop(1)</text>
 
-        <!-- CLK square wave (10 cycles) -->
         <polyline class="clk" points="
           90,50 90,25 125,25 125,50 160,50
           160,25 195,25 195,50 230,50
@@ -550,7 +777,6 @@
           650,25 685,25 685,50 720,50
           720,25 755,25 755,50 790,50" />
 
-        <!-- Example IN data: Start=0, 1, 0, 1, 1, 0, 0, 1, 0, Stop=1 -->
         <polyline class="in" points="
           60,75 90,75 90,100 160,100
           160,75 230,75
@@ -561,7 +787,6 @@
           650,100 720,100
           720,75 820,75" />
 
-        <!-- MAN = CLK ~^ IN (when IN=0: ~CLK; when IN=1: CLK) -->
         <polyline class="man" points="
           90,150 125,150 125,125 160,125
           160,125 195,125 195,150 230,150
@@ -802,15 +1027,29 @@ command2 [<span class="num">347:340</span>] = <span class="num">8'b0000_1111</sp
       </table>
     </div>
   </section>
+
+  <div class="pager">
+    <a href="com_con_out_guide.html">← 上一模块：COM_CON_OUT_tb（测量回传）</a>
+    <a href="com_enable_guide.html">下一模块：COM_ENABLE_tb（通信使能控制） →</a>
+  </div>
 </div>
 
 <footer>
-  BMI_testbench_single.v 功能仿真代码逐行解析文档 · 支持关键词实时检索与深/浅色主题切换
+  BMI_digital_sakata 测试平台全集（进阶版） · 支持子模块跨页跳转、实时检索与深/浅色主题同步
 </footer>
 
 <script>
+  (function initTheme() {
+    if (localStorage.getItem('bmi_theme') === 'dark') {
+      document.body.classList.add('dark');
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = '☀️ 切换浅色模式';
+    }
+  })();
+
   function toggleTheme() {
     const isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('bmi_theme', isDark ? 'dark' : 'light');
     document.getElementById('themeToggle').textContent = isDark ? '☀️ 切换浅色模式' : '🌙 切换深色模式';
   }
 

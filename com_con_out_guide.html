@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>COM_CON_OUT_tb.v 逐行深度解析 · BMI 测试平台文档库</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-alt: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --accent: #0d9488;
+    --accent-light: #f0fdfa;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --warn: #d97706;
+    --warn-light: #fffbeb;
+    --code-bg: #1e293b;
+    --code-text: #f8fafc;
+    --kw: #93c5fd;
+    --num: #fcd34d;
+    --cmt: #94a3b8;
+    --sig: #6ee7b7;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  body.dark {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface-alt: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --primary: #60a5fa;
+    --primary-light: #1e3a8a33;
+    --accent: #2dd4bf;
+    --accent-light: #134e4a33;
+    --purple: #a78bfa;
+    --purple-light: #4c1d9533;
+    --warn: #fbbf24;
+    --warn-light: #78350f33;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* Global Module Switcher Top Bar */
+  .global-nav {
+    background: #090d16;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.55rem 0;
+    font-size: 0.84rem;
+  }
+
+  .global-nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .brand-title {
+    color: #93c5fd;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .module-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .module-tabs a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.32rem 0.72rem;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .module-tabs a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .module-tabs a.active {
+    background: #2563eb;
+    color: #fff;
+    border-color: #3b82f6;
+    font-weight: 600;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #fff;
+    padding: 2.25rem 1.5rem 2.2rem;
+    border-bottom: 1px solid #334155;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  .header-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #e0f2fe;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.85rem;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.98rem;
+    max-width: 850px;
+  }
+
+  .theme-btn {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .theme-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  /* Summary Metrics */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: -1.5rem auto 1.75rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+
+  .metric-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .metric-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0.2rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .metric-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+  }
+
+  /* Portal Cards for Sub-modules */
+  .portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .portal-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .portal-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  }
+
+  .portal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .portal-tag {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .portal-arrow {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .portal-card h3 {
+    margin: 0.25rem 0 0.45rem;
+    font-size: 1.08rem;
+  }
+
+  .portal-card p {
+    margin: 0 0 0.85rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+
+  .portal-meta {
+    font-size: 0.78rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Sticky Navigation & Controls */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav-links a:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .search-box {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex: 1 1 280px;
+    max-width: 420px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-alt);
+    color: var(--text);
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    border-color: var(--primary);
+  }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .line-range {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .callout {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 0.85rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .callout.warn {
+    background: var(--warn-light);
+    border-left-color: var(--warn);
+  }
+
+  .callout.info {
+    background: var(--purple-light);
+    border-left-color: var(--purple);
+  }
+
+  /* Diagrams */
+  .diagram-wrap {
+    overflow-x: auto;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .byte-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+  }
+
+  .byte-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .byte-cell strong {
+    display: block;
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+  }
+
+  .byte-cell span {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+
+  /* Line-by-line Table */
+  .code-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  table.code-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  table.code-table th {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table.code-table td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  table.code-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  table.code-table tr:hover td {
+    background: var(--primary-light);
+  }
+
+  td.ln {
+    width: 58px;
+    text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    user-select: none;
+    background: var(--surface-alt);
+  }
+
+  td.code-col {
+    width: 45%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  td.desc-col {
+    color: var(--text);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    margin-right: 0.35rem;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .tag.warn {
+    background: var(--warn-light);
+    color: var(--warn);
+  }
+
+  .tag.cmt {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+  }
+
+  .tag.accent {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .kw { color: var(--kw); font-weight: 600; }
+  .num { color: var(--num); }
+  .cmt { color: var(--cmt); font-style: italic; }
+
+  .filter-status {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Bottom Page Pager */
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .pager a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.15rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .pager a:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem 1rem 3rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="global-nav">
+  <div class="container global-nav-inner">
+    <div class="brand-title">🧬 BMI_digital_sakata · 仿真测试平台文档库</div>
+    <nav class="module-tabs">
+      <a href="index.html" class="">🏠 顶层主控 (BMI_testbench_single)</a>
+      <a href="com_enable_guide.html" class="">⏱️ 通信使能 (COM_ENABLE_tb)</a>
+      <a href="select_guide.html" class="">🔀 总线选择 (SELECT_tb)</a>
+      <a href="com_con_out_guide.html" class="active">📡 数据回传 (COM_CON_OUT_tb)</a>
+    </nav>
+  </div>
+</div>
+
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <div>
+        <div class="badge-row">
+          <span class="badge">子模块 03 · 测量数据串行回传</span>
+          <span class="badge">COM_CON_OUT_tb.v</span>
+          <span class="badge">12-bit 光学 + 12-bit 电学数据</span>
+          <span class="badge">S_Bias_OPT / S_Bias_ELE 同步触发</span>
+        </div>
+        <h1>COM_CON_OUT_tb.v 逐行代码深度解析</h1>
+        <p class="subtitle">
+          用于验证脑机接口双模态（光学荧光 + 神经电生理）测量数据输出控制器（<code>COM_CON_OUT</code>）：在偏置建立脉冲 <code>S_Bias_OPT</code> 与 <code>S_Bias_ELE</code> 的触发下，输出通道使能信号 <code>COM_EN_OPT</code> / <code>COM_EN_ELE</code>，并将 8-bit 芯片地址与两路 12-bit 采样数据（<code>12'h441</code>）串行打包发送至 <code>OUT</code>。
+        </p>
+      </div>
+      <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙 切换深色模式</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">光学测量数据 (DATA_OPT)</div>
+      <div class="metric-val">12'b0100_0100_0001</div>
+      <div class="metric-desc">十六进制 0x441（十进制 1089），测试位序特征明显</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">电学测量数据 (DATA_ELE)</div>
+      <div class="metric-val">12'b0100_0100_0001</div>
+      <div class="metric-desc">十六进制 0x441（12-bit 神经电生理 ADC 采样字）</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">源设备地址 (ADDRESS)</div>
+      <div class="metric-val">8'b0000_0000 (0x00)</div>
+      <div class="metric-desc">标识回传数据包所属的植入式节点 ID</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">偏置触发窗口 (S_Bias)</div>
+      <div class="metric-val">80 μs 高电平脉冲</div>
+      <div class="metric-desc">分别在 100~180μs 与 920~1000μs 触发两轮回传</div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="container toolbar-inner">
+    <nav class="nav-links">
+      <a href="#sec-timing">数据帧与偏置时序图</a>
+      <a href="#sec-1">1. 模块与双模态信号</a>
+      <a href="#sec-2">2. 测试向量与 DUT 例化</a>
+      <a href="#sec-3">3. 时钟与双偏置激励</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索行号、信号名或说明（如 DATA_OPT、S_Bias_ELE、COM_EN）..." oninput="filterRows()" />
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="filterStatus" class="filter-status" style="display:none;"></div>
+
+  <section class="section-card" id="sec-timing">
+    <div class="section-header">
+      <h2>📊 双模态数据打包与 S_Bias 触发时序图解</h2>
+      <span class="line-range">t = 0 ~ 1,920 μs</span>
+    </div>
+
+    <div class="callout">
+      <strong>为什么测试数据特意选为 <code>12'b0100_0100_0001</code>（0x441）？</strong><br/>
+      在数字串行接口仿真中，全 0 或全 1 无法分辨高/低位发送顺序（MSB-first 还是 LSB-first）以及是否发生移位错位。<code>0100_0100_0001</code> 仅在 <code>bit[10]</code>、<code>bit[6]</code>、<code>bit[0]</code> 三个非对称位置为 <code>1</code>（间隔分别为 4 位和 6 位），在仿真波形上一眼就能判断 <code>OUT</code> 引脚输出的是高位在前还是低位在前，以及 12 位数据是否完整无截断！
+    </div>
+
+    <div class="diagram-wrap">
+      <svg width="880" height="175" viewBox="0 0 880 175" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          .lbl { font-family: monospace; font-size: 13px; font-weight: bold; fill: #334155; }
+          .sub { font-family: sans-serif; font-size: 11px; fill: #64748b; }
+          .grid { stroke: #cbd5e1; stroke-dasharray: 3,3; stroke-width: 1; }
+          .por { stroke: #7c3aed; stroke-width: 2.2; fill: none; }
+          .bias { stroke: #2563eb; stroke-width: 2.2; fill: none; }
+        </style>
+        <line x1="140" y1="15" x2="140" y2="150" class="grid"/>
+        <line x1="185" y1="15" x2="185" y2="150" class="grid"/>
+        <line x1="255" y1="15" x2="255" y2="150" class="grid"/>
+        <line x1="345" y1="15" x2="345" y2="150" class="grid"/>
+        <line x1="530" y1="15" x2="530" y2="150" class="grid"/>
+        <line x1="620" y1="15" x2="620" y2="150" class="grid"/>
+        <line x1="785" y1="15" x2="785" y2="150" class="grid"/>
+
+        <text x="15" y="42" class="lbl">POR</text>
+        <text x="15" y="88" class="lbl">S_Bias_OPT/ELE</text>
+        <text x="15" y="135" class="lbl">OUT (数据包)</text>
+
+        <text x="132" y="14" class="sub">0ns</text>
+        <text x="172" y="14" class="sub">300ns</text>
+        <text x="238" y="14" class="sub">100μs</text>
+        <text x="328" y="14" class="sub">180μs</text>
+        <text x="512" y="14" class="sub">920μs</text>
+        <text x="600" y="14" class="sub">1000μs</text>
+        <text x="765" y="14" class="sub">1920μs</text>
+
+        <polyline class="por" points="140,50 185,50 185,25 845,25" />
+
+        <polyline class="bias" points="
+          140,95 255,95
+          255,70 345,70
+          345,95 530,95
+          530,70 620,70
+          620,95 785,95
+          785,70 845,70" />
+
+        <rect x="345" y="118" width="120" height="22" rx="4" fill="#0d948822" stroke="#0d9488" stroke-width="1.8"/>
+        <text x="355" y="133" class="sub" style="fill:#0f766e; font-weight:bold;">ADDR + OPT + ELE</text>
+
+        <rect x="620" y="118" width="120" height="22" rx="4" fill="#0d948822" stroke="#0d9488" stroke-width="1.8"/>
+        <text x="630" y="133" class="sub" style="fill:#0f766e; font-weight:bold;">ADDR + OPT + ELE</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Section 1 -->
+  <section class="section-card" id="sec-1">
+    <div class="section-header">
+      <h2>1. 模块声明与光/电双模态信号定义</h2>
+      <span class="line-range">Lines 1 – 9</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">1</td><td class="code-col"><span class="kw">`timescale</span> <span class="num">1ns/1ns</span></td><td class="desc-col"><span class="tag">编译指令</span>仿真时间单位为 <strong>1ns</strong>，精度为 <strong>1ns</strong>。</td></tr>
+          <tr class="code-row"><td class="ln">3</td><td class="code-col"><span class="kw">module</span> COM_CON_OUT_tb;</td><td class="desc-col"><span class="tag">模块定义</span>声明测量数据输出控制器的测试平台 <code>COM_CON_OUT_tb</code>。</td></tr>
+          <tr class="code-row"><td class="ln">4</td><td class="code-col"><span class="kw">reg</span> CLK, POR, S_Bias_OPT,S_Bias_ELE;</td><td class="desc-col"><span class="tag">激励寄存器</span><code>CLK</code>（10MHz 时钟）、<code>POR</code>（上电复位）、<code>S_Bias_OPT</code>（光学检测模拟前端偏置稳定/采样完成标志）、<code>S_Bias_ELE</code>（电生理检测前端偏置稳定/采样完成标志）。</td></tr>
+          <tr class="code-row"><td class="ln">5</td><td class="code-col"><span class="kw">wire</span> OPERATE_OPT,OPERATE_ELE;</td><td class="desc-col"><span class="tag">使能线网</span><code>OPERATE_OPT</code> 与 <code>OPERATE_ELE</code>，分别指示光学测量模块与电学测量模块处于激活状态。</td></tr>
+          <tr class="code-row"><td class="ln">6</td><td class="code-col"><span class="kw">wire</span> [<span class="num">7:0</span>] ADDRESS;</td><td class="desc-col"><span class="tag">输入总线</span>8 位本机设备地址，将作为包头随测量数据一同回传给体外接收机以区分不同传感器节点。</td></tr>
+          <tr class="code-row"><td class="ln">7</td><td class="code-col"><span class="kw">wire</span> [<span class="num">11:0</span>] DATA_OPT,DATA_ELE;</td><td class="desc-col"><span class="tag">测量数据总线</span>两路 12 位宽并行数据总线：<code>DATA_OPT[11:0]</code> 为光学传感器 ADC 转换结果；<code>DATA_ELE[11:0]</code> 为神经电信号 ADC 转换结果。</td></tr>
+          <tr class="code-row"><td class="ln">8</td><td class="code-col"><span class="kw">wire</span> OUT;</td><td class="desc-col"><span class="tag">串行输出</span>单比特串行输出引脚 <code>OUT</code>，输出打包后的通信数据帧。</td></tr>
+          <tr class="code-row"><td class="ln">9</td><td class="code-col"><span class="kw">wire</span> COM_EN_OPT, COM_EN_ELE;</td><td class="desc-col"><span class="tag">握手输出</span><code>COM_CON_OUT</code> 输出的光学/电学通信使能状态指示信号，通知前端寄存器锁存或切换下一组采样数据。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 2 -->
+  <section class="section-card" id="sec-2">
+    <div class="section-header">
+      <h2>2. 测试向量赋值与 COM_CON_OUT 模块例化</h2>
+      <span class="line-range">Lines 12 – 23</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">12</td><td class="code-col"><span class="kw">assign</span> OPERATE_OPT = <span class="num">1'b1</span>;</td><td class="desc-col"><span class="tag">模式使能</span>开启光学测量通道工作使能（<code>1</code>）。</td></tr>
+          <tr class="code-row"><td class="ln">13</td><td class="code-col"><span class="kw">assign</span> OPERATE_ELE = <span class="num">1'b1</span>;</td><td class="desc-col"><span class="tag">模式使能</span>开启电学测量通道工作使能（<code>1</code>）。</td></tr>
+          <tr class="code-row"><td class="ln">14</td><td class="code-col"><span class="kw">assign</span> ADDRESS [<span class="num">7:0</span>] = <span class="num">8'b0000_0000</span>;</td><td class="desc-col"><span class="tag">测试地址</span>设定当前节点地址为 <code>0x00</code>（与主控文件中 Device 0 地址对应）。</td></tr>
+          <tr class="code-row"><td class="ln">15</td><td class="code-col"><span class="kw">assign</span> DATA_OPT[<span class="num">11:0</span>] = <span class="num">12'b0100_0100_0001</span>;</td><td class="desc-col"><span class="tag">光学测试向量</span>设定 12 位光学采样测试值为 <code>12'h441</code>（仅 bit 10、6、0 为 1，便于核对串行移位顺序）。</td></tr>
+          <tr class="code-row"><td class="ln">16</td><td class="code-col"><span class="kw">assign</span> DATA_ELE[<span class="num">11:0</span>] = <span class="num">12'b0100_0100_0001</span>;</td><td class="desc-col"><span class="tag">电学测试向量</span>设定 12 位电学采样测试值为 <code>12'h441</code>。</td></tr>
+          <tr class="code-row"><td class="ln">18–23</td><td class="code-col">COM_CON_OUT COM_CON_OUT(
+.CLK(CLK),.POR(POR),.S_Bias_OPT(S_Bias_OPT),.S_Bias_ELE(S_Bias_ELE),
+.COM_EN_OPT(COM_EN_OPT),.COM_EN_ELE(COM_EN_ELE),
+.OPERATE_OPT(OPERATE_OPT),.OPERATE_ELE(OPERATE_ELE),
+.ADDRESS(ADDRESS[<span class="num">7:0</span>]),.DATA_OPT(DATA_OPT[<span class="num">11:0</span>]),.DATA_ELE(DATA_ELE[<span class="num">11:0</span>]),.OUT(OUT)
+);</td><td class="desc-col"><span class="tag">DUT 例化</span>实例化被测核心模块 <code>COM_CON_OUT</code>，将时钟、复位、双路偏置触发信号、使能控制以及地址与 12-bit 双模态测量数据总线全部接入。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 3 -->
+  <section class="section-card" id="sec-3">
+    <div class="section-header">
+      <h2>3. 主时钟与双通道偏置触发（S_Bias_OPT / S_Bias_ELE）激励</h2>
+      <span class="line-range">Lines 27 – 56</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">27–31</td><td class="code-col"><span class="cmt">//CLOCK generation//</span>
+<span class="kw">always begin</span>
+     CLK = <span class="num">1'b1</span>;
+<span class="num">#50</span> CLK = <span class="num">1'b0</span>;
+<span class="num">#50</span>;
+<span class="kw">end</span></td><td class="desc-col"><span class="tag">时钟生成</span>产生周期为 <code>100ns</code>（<strong>10 MHz</strong>）的方波主时钟 <code>CLK</code>。</td></tr>
+          <tr class="code-row"><td class="ln">33–36</td><td class="code-col"><span class="kw">initial fork</span>
+          POR = <span class="num">1'b0</span>;
+<span class="num">#300</span>   POR = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">上电复位</span>在 <code>t = 0ns</code> 拉低复位，<code>t = 300ns</code> 释放复位。</td></tr>
+          <tr class="code-row"><td class="ln">38–45</td><td class="code-col"><span class="kw">initial fork</span>
+         S_Bias_OPT = <span class="num">1'b0</span>;
+<span class="num">#100000</span>  S_Bias_OPT = <span class="num">1'b1</span>;
+<span class="num">#180000</span>  S_Bias_OPT = <span class="num">1'b0</span>;
+<span class="num">#920000</span>  S_Bias_OPT = <span class="num">1'b1</span>;
+<span class="num">#1000000</span> S_Bias_OPT = <span class="num">1'b0</span>;
+<span class="num">#1920000</span> S_Bias_OPT = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">光学偏置激励</span>使用并行块 <code>fork...join</code> 在绝对时刻控制 <code>S_Bias_OPT</code>：在 <code>100μs~180μs</code>（宽 80μs）与 <code>920μs~1000μs</code>（宽 80μs）产生两次高电平偏置/采样脉冲，并在 <code>1920μs</code> 发起第三次脉冲，驱动光学通道数据串行回传。</td></tr>
+          <tr class="code-row"><td class="ln">47–54</td><td class="code-col"><span class="kw">initial fork</span>
+         S_Bias_ELE = <span class="num">1'b0</span>;
+<span class="num">#100000</span>  S_Bias_ELE = <span class="num">1'b1</span>;
+<span class="num">#180000</span>  S_Bias_ELE = <span class="num">1'b0</span>;
+<span class="num">#920000</span>  S_Bias_ELE = <span class="num">1'b1</span>;
+<span class="num">#1000000</span> S_Bias_ELE = <span class="num">1'b0</span>;
+<span class="num">#1920000</span> S_Bias_ELE = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">电学偏置激励</span>以与 <code>S_Bias_OPT</code> 完全同步的时间轴激励 <code>S_Bias_ELE</code>，测试当光学与电学双模态测量<strong>同时完成</strong>时，<code>COM_CON_OUT</code> 内部仲裁与依次串行拼接发送（避免双通道数据冲突）的正确性。</td></tr>
+          <tr class="code-row"><td class="ln">56</td><td class="code-col"><span class="kw">endmodule</span></td><td class="desc-col"><span class="tag">模块结束</span>结束 <code>COM_CON_OUT_tb</code> 模块定义。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="pager">
+    <a href="select_guide.html">← 上一模块：SELECT_tb（总线选择与仲裁）</a>
+    <a href="index.html">返回主页：BMI_testbench_single（顶层主控与全集导航） →</a>
+  </div>
+</div>
+
+<footer>
+  BMI_digital_sakata 测试平台文档库 · COM_CON_OUT_tb.v 逐行解析
+</footer>
+
+<script>
+  (function initTheme() {
+    if (localStorage.getItem('bmi_theme') === 'dark') {
+      document.body.classList.add('dark');
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = '☀️ 切换浅色模式';
+    }
+  })();
+
+  function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('bmi_theme', isDark ? 'dark' : 'light');
+    document.getElementById('themeToggle').textContent = isDark ? '☀️ 切换浅色模式' : '🌙 切换深色模式';
+  }
+
+  function filterRows() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const rows = document.querySelectorAll('tr.code-row');
+    const status = document.getElementById('filterStatus');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      if (!q || text.includes(q)) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (q) {
+      status.style.display = 'block';
+      status.textContent = `筛选条件 "${q}"：共匹配到 ${visibleCount} 条代码解析记录`;
+    } else {
+      status.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>

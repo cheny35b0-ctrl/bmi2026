@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>COM_ENABLE_tb.v 逐行深度解析 · BMI 测试平台文档库</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-alt: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --accent: #0d9488;
+    --accent-light: #f0fdfa;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --warn: #d97706;
+    --warn-light: #fffbeb;
+    --code-bg: #1e293b;
+    --code-text: #f8fafc;
+    --kw: #93c5fd;
+    --num: #fcd34d;
+    --cmt: #94a3b8;
+    --sig: #6ee7b7;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  body.dark {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface-alt: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --primary: #60a5fa;
+    --primary-light: #1e3a8a33;
+    --accent: #2dd4bf;
+    --accent-light: #134e4a33;
+    --purple: #a78bfa;
+    --purple-light: #4c1d9533;
+    --warn: #fbbf24;
+    --warn-light: #78350f33;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* Global Module Switcher Top Bar */
+  .global-nav {
+    background: #090d16;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.55rem 0;
+    font-size: 0.84rem;
+  }
+
+  .global-nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .brand-title {
+    color: #93c5fd;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .module-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .module-tabs a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.32rem 0.72rem;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .module-tabs a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .module-tabs a.active {
+    background: #2563eb;
+    color: #fff;
+    border-color: #3b82f6;
+    font-weight: 600;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #fff;
+    padding: 2.25rem 1.5rem 2.2rem;
+    border-bottom: 1px solid #334155;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  .header-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #e0f2fe;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.85rem;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.98rem;
+    max-width: 850px;
+  }
+
+  .theme-btn {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .theme-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  /* Summary Metrics */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: -1.5rem auto 1.75rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+
+  .metric-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .metric-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0.2rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .metric-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+  }
+
+  /* Portal Cards for Sub-modules */
+  .portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .portal-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .portal-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  }
+
+  .portal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .portal-tag {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .portal-arrow {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .portal-card h3 {
+    margin: 0.25rem 0 0.45rem;
+    font-size: 1.08rem;
+  }
+
+  .portal-card p {
+    margin: 0 0 0.85rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+
+  .portal-meta {
+    font-size: 0.78rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Sticky Navigation & Controls */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav-links a:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .search-box {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex: 1 1 280px;
+    max-width: 420px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-alt);
+    color: var(--text);
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    border-color: var(--primary);
+  }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .line-range {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .callout {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 0.85rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .callout.warn {
+    background: var(--warn-light);
+    border-left-color: var(--warn);
+  }
+
+  .callout.info {
+    background: var(--purple-light);
+    border-left-color: var(--purple);
+  }
+
+  /* Diagrams */
+  .diagram-wrap {
+    overflow-x: auto;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .byte-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+  }
+
+  .byte-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .byte-cell strong {
+    display: block;
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+  }
+
+  .byte-cell span {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+
+  /* Line-by-line Table */
+  .code-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  table.code-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  table.code-table th {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table.code-table td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  table.code-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  table.code-table tr:hover td {
+    background: var(--primary-light);
+  }
+
+  td.ln {
+    width: 58px;
+    text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    user-select: none;
+    background: var(--surface-alt);
+  }
+
+  td.code-col {
+    width: 45%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  td.desc-col {
+    color: var(--text);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    margin-right: 0.35rem;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .tag.warn {
+    background: var(--warn-light);
+    color: var(--warn);
+  }
+
+  .tag.cmt {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+  }
+
+  .tag.accent {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .kw { color: var(--kw); font-weight: 600; }
+  .num { color: var(--num); }
+  .cmt { color: var(--cmt); font-style: italic; }
+
+  .filter-status {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Bottom Page Pager */
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .pager a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.15rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .pager a:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem 1rem 3rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="global-nav">
+  <div class="container global-nav-inner">
+    <div class="brand-title">🧬 BMI_digital_sakata · 仿真测试平台文档库</div>
+    <nav class="module-tabs">
+      <a href="index.html" class="">🏠 顶层主控 (BMI_testbench_single)</a>
+      <a href="com_enable_guide.html" class="active">⏱️ 通信使能 (COM_ENABLE_tb)</a>
+      <a href="select_guide.html" class="">🔀 总线选择 (SELECT_tb)</a>
+      <a href="com_con_out_guide.html" class="">📡 数据回传 (COM_CON_OUT_tb)</a>
+    </nav>
+  </div>
+</div>
+
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <div>
+        <div class="badge-row">
+          <span class="badge">子模块 01 · 上行通信使能控制</span>
+          <span class="badge">COM_ENABLE_tb.v</span>
+          <span class="badge">10 MHz 时钟 · 1ns/1ns</span>
+          <span class="badge">initial fork...join 绝对时间激励</span>
+        </div>
+        <h1>COM_ENABLE_tb.v 逐行代码深度解析</h1>
+        <p class="subtitle">
+          用于验证脑机接口芯片上行通信使能控制器（<code>COM_ENABLE</code>）：监测模拟前端 <code>ADC_state</code> 采样状态，在每次 ADC 转换结束后经过 <code>def_delay</code>（250）与 <code>DELAY</code>（5）设定的防冲突延迟，安全开启 <code>ENABLE</code> 通信窗口并输出分频时钟 <code>CLK25</code>。
+        </p>
+      </div>
+      <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙 切换深色模式</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">系统主时钟 (CLK)</div>
+      <div class="metric-val">10 MHz (100 ns)</div>
+      <div class="metric-desc">高电平 50ns + 低电平 50ns</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">步进延迟配置 (DELAY)</div>
+      <div class="metric-val">4'b0101 (5)</div>
+      <div class="metric-desc">4 位可编程通道/时隙偏移量</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">基准延迟配置 (def_delay)</div>
+      <div class="metric-val">10'd250 (25 μs)</div>
+      <div class="metric-desc">10 位默认基准延迟（250 个 CLK 周期）</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">多周期 ADC 激励窗口</div>
+      <div class="metric-val">0 ~ 1,920 μs</div>
+      <div class="metric-desc">模拟 3 轮 ADC 采样翻转，验证状态机恢复</div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="container toolbar-inner">
+    <nav class="nav-links">
+      <a href="#sec-timing">时序与语法图解</a>
+      <a href="#sec-1">1. 模块与信号定义</a>
+      <a href="#sec-2">2. 参数赋值与 DUT 例化</a>
+      <a href="#sec-3">3. 时钟与 fork..join 激励</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索行号、信号名或说明（如 ADC_state、fork、def_delay）..." oninput="filterRows()" />
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="filterStatus" class="filter-status" style="display:none;"></div>
+
+  <section class="section-card" id="sec-timing">
+    <div class="section-header">
+      <h2>📊 COM_ENABLE 硬件功能与绝对时间激励图解</h2>
+      <span class="line-range">仿真时长 &gt; 1.92 ms</span>
+    </div>
+
+    <div class="callout">
+      <strong>为什么上行通信必须避开 <code>ADC_state == 1</code>？</strong><br/>
+      植入式神经记录芯片的 ADC 在对微伏级神经动作电位进行高精度采样时，数字总线的高速翻转会通过衬底或电源耦合引入开关噪声。<code>COM_ENABLE</code> 模块通过监测 <code>ADC_state</code> 下降沿（采样结束），等待 <code>def_delay</code>（250 周期）与 <code>DELAY</code>（5）设定的稳定时间后，才拉高 <code>ENABLE</code> 通知后端 <code>SELECT</code> 与 <code>COM_CON_OUT</code> 开始向外发送数据。
+    </div>
+
+    <div class="callout info">
+      <strong>Verilog 关键语法点：<code>initial fork ... join</code> 与 <code>initial begin ... end</code> 的区别</strong><br/>
+      本测试平台大量使用 <code>initial fork ... join</code>（并行块）：块内所有带延迟的赋值语句均<strong>同时在 t = 0 启动计时</strong>，因此 <code>#100000</code>、<code>#200000</code>、<code>#920000</code> 均代表<strong>绝对仿真时刻</strong>（100μs、200μs、920μs），而非相邻语句的累加延迟！
+    </div>
+
+    <div class="diagram-wrap">
+      <svg width="880" height="170" viewBox="0 0 880 170" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          .lbl { font-family: monospace; font-size: 13px; font-weight: bold; fill: #334155; }
+          .sub { font-family: sans-serif; font-size: 11px; fill: #64748b; }
+          .grid { stroke: #cbd5e1; stroke-dasharray: 3,3; stroke-width: 1; }
+          .por { stroke: #7c3aed; stroke-width: 2.2; fill: none; }
+          .adc { stroke: #2563eb; stroke-width: 2.2; fill: none; }
+          .en  { stroke: #0d9488; stroke-width: 2.2; fill: none; stroke-dasharray: 5,3; }
+        </style>
+        <line x1="110" y1="15" x2="110" y2="145" class="grid"/>
+        <line x1="155" y1="15" x2="155" y2="145" class="grid"/>
+        <line x1="230" y1="15" x2="230" y2="145" class="grid"/>
+        <line x1="330" y1="15" x2="330" y2="145" class="grid"/>
+        <line x1="520" y1="15" x2="520" y2="145" class="grid"/>
+        <line x1="610" y1="15" x2="610" y2="145" class="grid"/>
+        <line x1="780" y1="15" x2="780" y2="145" class="grid"/>
+
+        <text x="15" y="42" class="lbl">POR</text>
+        <text x="15" y="88" class="lbl">ADC_state</text>
+        <text x="15" y="132" class="lbl">ENABLE(响应)</text>
+
+        <text x="102" y="14" class="sub">0ns</text>
+        <text x="142" y="14" class="sub">300ns</text>
+        <text x="212" y="14" class="sub">100μs</text>
+        <text x="312" y="14" class="sub">200μs</text>
+        <text x="502" y="14" class="sub">920μs</text>
+        <text x="590" y="14" class="sub">1000μs</text>
+        <text x="760" y="14" class="sub">1920μs</text>
+
+        <polyline class="por" points="110,50 155,50 155,25 840,25" />
+
+        <polyline class="adc" points="
+          110,95 230,95
+          230,70 330,70
+          330,95 520,95
+          520,70 610,70
+          610,95 780,95
+          780,70 840,70" />
+
+        <polyline class="en" points="
+          110,140 365,140
+          365,115 480,115
+          480,140 645,140
+          645,115 745,115
+          745,140 840,140" />
+
+        <text x="368" y="110" class="sub">延迟 def_delay+DELAY 后使能</text>
+        <text x="648" y="110" class="sub">第2轮采样后再次使能</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Section 1 -->
+  <section class="section-card" id="sec-1">
+    <div class="section-header">
+      <h2>1. 模块声明与测试信号定义</h2>
+      <span class="line-range">Lines 1 – 11</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">1</td><td class="code-col"><span class="kw">`timescale</span> <span class="num">1ns/1ns</span></td><td class="desc-col"><span class="tag">编译指令</span>规定仿真时间单位为 <strong>1ns</strong>，仿真精度为 <strong>1ns</strong>。</td></tr>
+          <tr class="code-row"><td class="ln">3</td><td class="code-col"><span class="kw">module</span> COM_ENABLE_tb;</td><td class="desc-col"><span class="tag">模块定义</span>声明无端口的独立测试平台模块 <code>COM_ENABLE_tb</code>。</td></tr>
+          <tr class="code-row"><td class="ln">5</td><td class="code-col"><span class="kw">reg</span> CLK,ADC_state,POR;</td><td class="desc-col"><span class="tag">激励寄存器</span>声明 3 个由 <code>always</code> 和 <code>initial</code> 过程块驱动的寄存器信号：<code>CLK</code>（10MHz 系统时钟）、<code>ADC_state</code>（ADC 采样忙闲状态）、<code>POR</code>（上电复位，低有效）。</td></tr>
+          <tr class="code-row"><td class="ln">6</td><td class="code-col"><span class="kw">wire</span> OPERATE;</td><td class="desc-col"><span class="tag">控制线网</span>声明单比特线网 <code>OPERATE</code>，指示芯片是否处于工作允许模式。</td></tr>
+          <tr class="code-row"><td class="ln">7</td><td class="code-col"><span class="kw">wire</span> [<span class="num">3:0</span>] DELAY;</td><td class="desc-col"><span class="tag">配置总线</span>声明 4 位宽总线 <code>DELAY</code>，用于设定额外的微调延迟步数（多设备分时避让偏移）。</td></tr>
+          <tr class="code-row"><td class="ln">8</td><td class="code-col"><span class="kw">wire</span> [<span class="num">9:0</span>] def_delay;</td><td class="desc-col"><span class="tag">配置总线</span>声明 10 位宽总线 <code>def_delay</code>，用于设定 ADC 采样结束后的默认基准等待周期数。</td></tr>
+          <tr class="code-row"><td class="ln">9</td><td class="code-col"><span class="kw">wire</span> CLK25;</td><td class="desc-col"><span class="tag">观测输出</span>声明线网 <code>CLK25</code>，接收被测模块内部生成的分频通信时钟以供波形观察。</td></tr>
+          <tr class="code-row"><td class="ln">11</td><td class="code-col"><span class="kw">wire</span> [<span class="num">2:0</span>] state;</td><td class="desc-col"><span class="tag">观测输出</span>声明 3 位宽总线 <code>state</code>，引出 <code>COM_ENABLE</code> 内部有限状态机（FSM）的当前状态编码，便于调试状态跳转。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 2 -->
+  <section class="section-card" id="sec-2">
+    <div class="section-header">
+      <h2>2. 静态参数配置与被测模块（DUT）例化</h2>
+      <span class="line-range">Lines 13 – 18</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">13</td><td class="code-col"><span class="kw">assign</span> DELAY[<span class="num">3:0</span>] = <span class="num">4'b0101</span>;</td><td class="desc-col"><span class="tag">参数赋值</span>将步进延迟设为二进制 <code>0101</code>（十进制 <strong>5</strong>）。</td></tr>
+          <tr class="code-row"><td class="ln">14</td><td class="code-col"><span class="kw">assign</span> def_delay[<span class="num">9:0</span>] = <span class="num">10'd250</span>;</td><td class="desc-col"><span class="tag">参数赋值</span>将基准延迟设为十进制 <strong>250</strong>（在 100ns 时钟周期下对应 <code>25,000ns = 25μs</code>）。</td></tr>
+          <tr class="code-row"><td class="ln">15</td><td class="code-col"><span class="kw">assign</span> OPERATE = <span class="num">1'b1</span>;</td><td class="desc-col"><span class="tag">参数赋值</span>持续置位 <code>OPERATE = 1</code>，模拟芯片处于正常激活运行状态。</td></tr>
+          <tr class="code-row"><td class="ln">17–18</td><td class="code-col">COM_ENABLE COM_ENABLE(.CLK(CLK),.POR(POR),.ADC_state(ADC_state),.DELAY(DELAY),.state(state),
+                      .OPERATE(OPERATE),.def_delay(def_delay),.ENABLE(ENABLE),.CLK25(CLK25));</td><td class="desc-col"><span class="tag">模块例化</span>实例化被测设计 <code>COM_ENABLE</code>，将激励信号与配置总线按端口名一一连接。<br/><span class="tag accent">语法细节</span>端口 <code>.ENABLE(ENABLE)</code> 未在上方显式声明，根据 Verilog 隐式线网规则会自动推导为一个 1-bit 的 <code>wire ENABLE</code> 信号。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 3 -->
+  <section class="section-card" id="sec-3">
+    <div class="section-header">
+      <h2>3. 时钟发生器与并行时间轴激励（fork ... join）</h2>
+      <span class="line-range">Lines 20 – 42</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">20–25</td><td class="code-col"><span class="cmt">//CLOCK generation//</span>
+<span class="kw">always begin</span>
+     CLK = <span class="num">1'b1</span>;
+<span class="num">#50</span> CLK = <span class="num">1'b0</span>;
+<span class="num">#50</span>;
+<span class="kw">end</span></td><td class="desc-col"><span class="tag">时钟生成</span>生成周期为 <code>100ns</code>（频率 <strong>10 MHz</strong>）、占空比 50% 的系统方波时钟 <code>CLK</code>。</td></tr>
+          <tr class="code-row"><td class="ln">27–30</td><td class="code-col"><span class="kw">initial fork</span>
+          POR = <span class="num">1'b0</span>;
+<span class="num">#300</span>   POR = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">上电复位</span>使用并行块 <code>fork...join</code>：在 <code>t = 0ns</code> 时拉低 <code>POR = 0</code> 复位电路；在绝对时刻 <code>t = 300ns</code>（3 个时钟周期后）拉高 <code>POR = 1</code> 完成上电复位释放。</td></tr>
+          <tr class="code-row"><td class="ln">32–33</td><td class="code-col"><span class="kw">initial fork</span>
+         ADC_state = <span class="num">1'b0</span>;</td><td class="desc-col"><span class="tag">ADC 初始态</span>在 <code>t = 0ns</code> 时设 <code>ADC_state = 0</code>（ADC 处于空闲未转换状态）。</td></tr>
+          <tr class="code-row"><td class="ln">34–35</td><td class="code-col"><span class="num">#100000</span>  ADC_state = <span class="num">1'b1</span>;
+<span class="num">#200000</span>  ADC_state = <span class="num">1'b0</span>;</td><td class="desc-col"><span class="tag">第1轮采样</span>在 <code>t = 100μs</code> 拉高 <code>ADC_state = 1</code>（开始采样，屏蔽通信）；在 <code>t = 200μs</code> 拉低 <code>ADC_state = 0</code>（采样完成，触发 <code>COM_ENABLE</code> 延时计数并输出 <code>ENABLE</code>）。</td></tr>
+          <tr class="code-row"><td class="ln">36–37</td><td class="code-col"><span class="num">#920000</span>  ADC_state = <span class="num">1'b1</span>;
+<span class="num">#1000000</span> ADC_state = <span class="num">1'b0</span>;</td><td class="desc-col"><span class="tag">第2轮采样</span>在 <code>t = 920μs</code> 再次拉高 <code>ADC_state = 1</code>，并在 <code>t = 1000μs（1ms）</code> 拉低，验证状态机在多轮周期性采样下的重复触发能力。</td></tr>
+          <tr class="code-row"><td class="ln">38–39</td><td class="code-col"><span class="num">#1920000</span> ADC_state = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">第3轮采样</span>在 <code>t = 1920μs（1.92ms）</code> 拉高 <code>ADC_state = 1</code>，验证当新一轮 ADC 采样提前到来时，<code>COM_ENABLE</code> 是否能正确复位/关闭使能以避免干扰。</td></tr>
+          <tr class="code-row"><td class="ln">42</td><td class="code-col"><span class="kw">endmodule</span></td><td class="desc-col"><span class="tag">模块结束</span>结束 <code>COM_ENABLE_tb</code> 模块定义。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="pager">
+    <a href="index.html">← 返回主页：BMI_testbench_single（顶层主控）</a>
+    <a href="select_guide.html">下一模块：SELECT_tb（设备地址与总线仲裁） →</a>
+  </div>
+</div>
+
+<footer>
+  BMI_digital_sakata 测试平台文档库 · COM_ENABLE_tb.v 逐行解析
+</footer>
+
+<script>
+  (function initTheme() {
+    if (localStorage.getItem('bmi_theme') === 'dark') {
+      document.body.classList.add('dark');
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = '☀️ 切换浅色模式';
+    }
+  })();
+
+  function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('bmi_theme', isDark ? 'dark' : 'light');
+    document.getElementById('themeToggle').textContent = isDark ? '☀️ 切换浅色模式' : '🌙 切换深色模式';
+  }
+
+  function filterRows() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const rows = document.querySelectorAll('tr.code-row');
+    const status = document.getElementById('filterStatus');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      if (!q || text.includes(q)) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (q) {
+      status.style.display = 'block';
+      status.textContent = `筛选条件 "${q}"：共匹配到 ${visibleCount} 条代码解析记录`;
+    } else {
+      status.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>

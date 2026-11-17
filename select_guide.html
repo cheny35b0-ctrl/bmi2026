@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SELECT_tb.v 逐行深度解析 · BMI 测试平台文档库</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-alt: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --accent: #0d9488;
+    --accent-light: #f0fdfa;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --warn: #d97706;
+    --warn-light: #fffbeb;
+    --code-bg: #1e293b;
+    --code-text: #f8fafc;
+    --kw: #93c5fd;
+    --num: #fcd34d;
+    --cmt: #94a3b8;
+    --sig: #6ee7b7;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  body.dark {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface-alt: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --primary: #60a5fa;
+    --primary-light: #1e3a8a33;
+    --accent: #2dd4bf;
+    --accent-light: #134e4a33;
+    --purple: #a78bfa;
+    --purple-light: #4c1d9533;
+    --warn: #fbbf24;
+    --warn-light: #78350f33;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* Global Module Switcher Top Bar */
+  .global-nav {
+    background: #090d16;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.55rem 0;
+    font-size: 0.84rem;
+  }
+
+  .global-nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .brand-title {
+    color: #93c5fd;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .module-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .module-tabs a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.32rem 0.72rem;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .module-tabs a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .module-tabs a.active {
+    background: #2563eb;
+    color: #fff;
+    border-color: #3b82f6;
+    font-weight: 600;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #fff;
+    padding: 2.25rem 1.5rem 2.2rem;
+    border-bottom: 1px solid #334155;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  .header-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #e0f2fe;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.85rem;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.98rem;
+    max-width: 850px;
+  }
+
+  .theme-btn {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .theme-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  /* Summary Metrics */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: -1.5rem auto 1.75rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+
+  .metric-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .metric-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0.2rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .metric-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+  }
+
+  /* Portal Cards for Sub-modules */
+  .portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .portal-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .portal-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  }
+
+  .portal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .portal-tag {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .portal-arrow {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .portal-card h3 {
+    margin: 0.25rem 0 0.45rem;
+    font-size: 1.08rem;
+  }
+
+  .portal-card p {
+    margin: 0 0 0.85rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+
+  .portal-meta {
+    font-size: 0.78rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Sticky Navigation & Controls */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav-links a:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .search-box {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex: 1 1 280px;
+    max-width: 420px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-alt);
+    color: var(--text);
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    border-color: var(--primary);
+  }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .line-range {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .callout {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 0.85rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .callout.warn {
+    background: var(--warn-light);
+    border-left-color: var(--warn);
+  }
+
+  .callout.info {
+    background: var(--purple-light);
+    border-left-color: var(--purple);
+  }
+
+  /* Diagrams */
+  .diagram-wrap {
+    overflow-x: auto;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .byte-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+  }
+
+  .byte-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .byte-cell strong {
+    display: block;
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+  }
+
+  .byte-cell span {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+
+  /* Line-by-line Table */
+  .code-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  table.code-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  table.code-table th {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table.code-table td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  table.code-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  table.code-table tr:hover td {
+    background: var(--primary-light);
+  }
+
+  td.ln {
+    width: 58px;
+    text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    user-select: none;
+    background: var(--surface-alt);
+  }
+
+  td.code-col {
+    width: 45%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  td.desc-col {
+    color: var(--text);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    margin-right: 0.35rem;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .tag.warn {
+    background: var(--warn-light);
+    color: var(--warn);
+  }
+
+  .tag.cmt {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+  }
+
+  .tag.accent {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .kw { color: var(--kw); font-weight: 600; }
+  .num { color: var(--num); }
+  .cmt { color: var(--cmt); font-style: italic; }
+
+  .filter-status {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Bottom Page Pager */
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .pager a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.15rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .pager a:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem 1rem 3rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="global-nav">
+  <div class="container global-nav-inner">
+    <div class="brand-title">🧬 BMI_digital_sakata · 仿真测试平台文档库</div>
+    <nav class="module-tabs">
+      <a href="index.html" class="">🏠 顶层主控 (BMI_testbench_single)</a>
+      <a href="com_enable_guide.html" class="">⏱️ 通信使能 (COM_ENABLE_tb)</a>
+      <a href="select_guide.html" class="active">🔀 总线选择 (SELECT_tb)</a>
+      <a href="com_con_out_guide.html" class="">📡 数据回传 (COM_CON_OUT_tb)</a>
+    </nav>
+  </div>
+</div>
+
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <div>
+        <div class="badge-row">
+          <span class="badge">子模块 02 · 总线选择与地址仲裁</span>
+          <span class="badge">SELECT_tb.v</span>
+          <span class="badge">CLK25 四分频选通 (2.5 MHz)</span>
+          <span class="badge">ADDRESS = 8'h81</span>
+        </div>
+        <h1>SELECT_tb.v 逐行代码深度解析</h1>
+        <p class="subtitle">
+          用于验证脑机接口多设备通信中的地址识别与数据选通模块（<code>SELECT</code>）：内建 4 位计数器 <code>CLK25_divider</code> 生成四分频使能脉冲 <code>CLK25</code>，在 <code>ENABLE</code> 有效窗口（<code>2μs ~ 28μs</code>）内根据 <code>ADDRESS</code> 与 <code>TYPE</code> 控制并/串地址及数据路由输出。
+        </p>
+      </div>
+      <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙 切换深色模式</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">分频选通脉冲 (CLK25)</div>
+      <div class="metric-val">2.5 MHz (400 ns)</div>
+      <div class="metric-desc">cnt4 == 4'd3 时输出 1 周期高脉冲（占空比 25%）</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">本机芯片地址 (ADDRESS)</div>
+      <div class="metric-val">8'b1000_0001 (0x81)</div>
+      <div class="metric-desc">最高位与最低位为 1 的非对称测试地址</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">ENABLE 有效传输窗</div>
+      <div class="metric-val">2 μs → 28 μs</div>
+      <div class="metric-desc">持续 26,000 ns（共 65 个 CLK25 节拍）</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">分频器复位释放时刻</div>
+      <div class="metric-val">ADC_state ↓ @ 1 μs</div>
+      <div class="metric-desc">t = 1000ns 解除分频器复位，提前 1μs 准备时钟</div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="container toolbar-inner">
+    <nav class="nav-links">
+      <a href="#sec-timing">分频与使能时序图</a>
+      <a href="#sec-1">1. 模块与信号定义</a>
+      <a href="#sec-2">2. 分频器与 DUT 例化</a>
+      <a href="#sec-3">3. 时钟与窗口激励</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索行号、信号名或说明（如 CLK25、cnt4、ADDRESS、ENABLE）..." oninput="filterRows()" />
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="filterStatus" class="filter-status" style="display:none;"></div>
+
+  <section class="section-card" id="sec-timing">
+    <div class="section-header">
+      <h2>📊 CLK25 四分频计数器与 ENABLE 窗口时序图解</h2>
+      <span class="line-range">t = 0 ~ 450 μs</span>
+    </div>
+
+    <div class="callout">
+      <strong>精妙的时序衔接设计：</strong><br/>
+      1. <code>t = 0 ~ 300ns</code>：<code>POR = 0</code> 全局复位；同时 <code>ADC_state = 1</code> 持续按住分频器 <code>CLK25_divider</code> 的复位端 <code>RST</code>，确保计数器静止在 <code>cnt4 = 0</code>。<br/>
+      2. <code>t = 1000ns (1μs)</code>：<code>ADC_state</code> 下降为 <code>0</code>，释放分频器复位，<code>CLK25</code> 开始每 4 个主时钟输出一个单周期高脉冲。<br/>
+      3. <code>t = 2000ns (2μs)</code>：在 <code>CLK25</code> 已经稳定运行 1μs 后，<code>ENABLE</code> 拉高为 <code>1</code> 并维持到 <code>28000ns (28μs)</code>，供 <code>SELECT</code> 状态机完成地址串行化（<code>S_ADDRESS</code>）、并行地址锁存（<code>P_ADDRESS</code>）以及命令控制字（<code>comcon_out</code>）选通输出。
+    </div>
+
+    <div class="diagram-wrap">
+      <svg width="880" height="190" viewBox="0 0 880 190" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          .lbl { font-family: monospace; font-size: 13px; font-weight: bold; fill: #334155; }
+          .sub { font-family: sans-serif; font-size: 11px; fill: #64748b; }
+          .grid { stroke: #cbd5e1; stroke-dasharray: 3,3; stroke-width: 1; }
+          .por { stroke: #7c3aed; stroke-width: 2.2; fill: none; }
+          .adc { stroke: #2563eb; stroke-width: 2.2; fill: none; }
+          .clk25 { stroke: #d97706; stroke-width: 2; fill: none; }
+          .en  { stroke: #0d9488; stroke-width: 2.2; fill: none; }
+        </style>
+        <line x1="115" y1="15" x2="115" y2="170" class="grid"/>
+        <line x1="170" y1="15" x2="170" y2="170" class="grid"/>
+        <line x1="250" y1="15" x2="250" y2="170" class="grid"/>
+        <line x1="360" y1="15" x2="360" y2="170" class="grid"/>
+        <line x1="620" y1="15" x2="620" y2="170" class="grid"/>
+        <line x1="770" y1="15" x2="770" y2="170" class="grid"/>
+
+        <text x="15" y="40" class="lbl">POR</text>
+        <text x="15" y="80" class="lbl">ADC_state</text>
+        <text x="15" y="120" class="lbl">CLK25(脉冲)</text>
+        <text x="15" y="160" class="lbl">ENABLE</text>
+
+        <text x="107" y="14" class="sub">0ns</text>
+        <text x="155" y="14" class="sub">300ns</text>
+        <text x="232" y="14" class="sub">1000ns(1μs)</text>
+        <text x="342" y="14" class="sub">2000ns(2μs)</text>
+        <text x="600" y="14" class="sub">28000ns(28μs)</text>
+        <text x="752" y="14" class="sub">450μs</text>
+
+        <polyline class="por" points="115,45 170,45 170,22 840,22" />
+        <polyline class="adc" points="115,62 250,62 250,85 770,85 770,62 840,62" />
+
+        <polyline class="clk25" points="
+          115,125 280,125
+          280,104 292,104 292,125 325,125
+          325,104 337,104 337,125 370,125
+          370,104 382,104 382,125 415,125
+          415,104 427,104 427,125 460,125
+          460,104 472,104 472,125 505,125
+          505,104 517,104 517,125 550,125
+          550,104 562,104 562,125 595,125
+          595,104 607,104 607,125 640,125
+          640,104 652,104 652,125 685,125
+          685,104 697,104 697,125 770,125" />
+
+        <polyline class="en" points="115,165 360,165 360,142 620,142 620,165 840,165" />
+        <text x="415" y="138" class="sub">有效传输窗口 (26μs = 65个CLK25周期)</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Section 1 -->
+  <section class="section-card" id="sec-1">
+    <div class="section-header">
+      <h2>1. 模块声明、控制信号与数据总线定义</h2>
+      <span class="line-range">Lines 1 – 15</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">1</td><td class="code-col"><span class="kw">`timescale</span> <span class="num">1ns/1ns</span></td><td class="desc-col"><span class="tag">编译指令</span>仿真时间单位为 <strong>1ns</strong>，精度为 <strong>1ns</strong>。</td></tr>
+          <tr class="code-row"><td class="ln">3</td><td class="code-col"><span class="kw">module</span> SELECT_tb;</td><td class="desc-col"><span class="tag">模块定义</span>声明 <code>SELECT</code> 模块的独立测试平台 <code>SELECT_tb</code>。</td></tr>
+          <tr class="code-row"><td class="ln">4</td><td class="code-col"><span class="kw">reg</span> CLK,ADC_state,POR,ENABLE;</td><td class="desc-col"><span class="tag">激励寄存器</span>声明 4 个由测试平台直接驱动的寄存器：<code>CLK</code>（10MHz 主时钟）、<code>ADC_state</code>（ADC 采样状态）、<code>POR</code>（低电平上电复位）、<code>ENABLE</code>（来自 <code>COM_ENABLE</code> 的通信允许信号）。</td></tr>
+          <tr class="code-row"><td class="ln">5</td><td class="code-col"><span class="kw">wire</span> C_OUT1,S_OUT,TYPE;</td><td class="desc-col"><span class="tag">输入线网</span><code>C_OUT1</code>（级联/主通道串行输入）、<code>S_OUT</code>（从属通道串行输入）、<code>TYPE</code>（数据包类型选择标志）。</td></tr>
+          <tr class="code-row"><td class="ln">6</td><td class="code-col"><span class="kw">wire</span> [<span class="num">7:0</span>] ADDRESS;</td><td class="desc-col"><span class="tag">输入总线</span>8 位本机设备硬件地址输入总线。</td></tr>
+          <tr class="code-row"><td class="ln">7</td><td class="code-col"><span class="kw">wire</span> [<span class="num">7:0</span>] P_ADDRESS;</td><td class="desc-col"><span class="tag">输出总线</span>8 位并行地址输出总线（用于片内并行寄存器译码）。</td></tr>
+          <tr class="code-row"><td class="ln">8</td><td class="code-col"><span class="kw">wire</span> S_ADDRESS,OUT;</td><td class="desc-col"><span class="tag">输出信号</span><code>S_ADDRESS</code>（串行化输出的地址位流）、<code>OUT</code>（经过多路仲裁后最终选通输出的串行数据流）。</td></tr>
+          <tr class="code-row"><td class="ln">9</td><td class="code-col"><span class="kw">wire</span> [<span class="num">2:0</span>] state;</td><td class="desc-col"><span class="tag">观测输出</span>3 位状态机状态输出，用于监视 <code>SELECT</code> 内部控制流转。</td></tr>
+          <tr class="code-row"><td class="ln">10</td><td class="code-col"><span class="kw">wire</span> [<span class="num">7:0</span>] comcon_out;</td><td class="desc-col"><span class="tag">输出总线</span>8 位通信控制输出总线，向后端 <code>COM_CON_OUT</code> 模块传递通道配置与命令字。</td></tr>
+          <tr class="code-row"><td class="ln">12</td><td class="code-col"><span class="kw">assign</span> C_OUT1 = <span class="num">1'b1</span>;</td><td class="desc-col"><span class="tag">常量激励</span>将通道 1 输入 <code>C_OUT1</code> 固定为逻辑 <code>1</code>，以便在波形中清晰区分其是否被选通到 <code>OUT</code>。</td></tr>
+          <tr class="code-row"><td class="ln">13</td><td class="code-col"><span class="kw">assign</span> ADDRESS [<span class="num">7:0</span>] = <span class="num">8'b1000_0001</span>;</td><td class="desc-col"><span class="tag">常量激励</span>设置当前设备地址为 <code>0x81</code>（<code>1000_0001</code>，首尾位为 1，方便观察串行移位时的起止边界）。</td></tr>
+          <tr class="code-row"><td class="ln">14</td><td class="code-col"><span class="kw">assign</span> TYPE = <span class="num">1'b1</span>;</td><td class="desc-col"><span class="tag">常量激励</span>将帧类型信号 <code>TYPE</code> 置为 <code>1</code>。</td></tr>
+          <tr class="code-row"><td class="ln">15</td><td class="code-col"><span class="kw">assign</span> S_OUT = <span class="num">1'b0</span>;</td><td class="desc-col"><span class="tag">常量激励</span>将辅助输入 <code>S_OUT</code> 固定为逻辑 <code>0</code>（与 <code>C_OUT1 = 1</code> 形成高低电平对比）。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 2 -->
+  <section class="section-card" id="sec-2">
+    <div class="section-header">
+      <h2>2. CLK25 四分频器构建与 SELECT 模块例化</h2>
+      <span class="line-range">Lines 17 – 22</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">17</td><td class="code-col"><span class="kw">wire</span> [<span class="num">3:0</span>] cnt4;</td><td class="desc-col"><span class="tag">计数器总线</span>声明 4 位计数值总线 <code>cnt4</code>，接收四分频计数器的当前计数值。</td></tr>
+          <tr class="code-row"><td class="ln">18</td><td class="code-col"><span class="kw">assign</span> CLK25 = (cnt4 == <span class="num">4'd3</span>);</td><td class="desc-col"><span class="tag">分频脉冲生成</span>组合逻辑比较器：每当计数器 <code>cnt4</code> 数到 <code>3</code>（即第 4 个时钟周期）时，输出 1 个 <code>CLK</code> 周期宽的高电平脉冲 <code>CLK25</code>，实现 <strong>10 MHz → 2.5 MHz</strong> 的四分频时钟使能信号。</td></tr>
+          <tr class="code-row"><td class="ln">19</td><td class="code-col">counter_4bit CLK25_divider(.CLK(CLK),.POR(POR),.RST(ADC_state),.COUNT_UP(<span class="num">1'b1</span>),.PERIOD(<span class="num">4'd4</span>),.COUNT(cnt4));</td><td class="desc-col"><span class="tag">分频器例化</span>实例化 4 位模 4 递增计数器 <code>CLK25_divider</code>（<code>PERIOD=4'd4</code>，循环计数 <code>0→1→2→3→0</code>）。注意其同步/异步清零端 <code>.RST</code> 直接连到 <code>ADC_state</code>，因此只要 ADC 在采样，分频器就保持清零锁定。</td></tr>
+          <tr class="code-row"><td class="ln">21–22</td><td class="code-col">SELECT SELECT(.CLK(CLK),.CLK25(CLK25),.POR(POR),.ADC_state(ADC_state),.C_OUT1(C_OUT1),.P_ADDRESS(P_ADDRESS),.S_ADDRESS(S_ADDRESS),
+              .S_OUT(S_OUT),.TYPE(TYPE),.ENABLE(ENABLE),.ADDRESS(ADDRESS),.OUT(OUT),.state(state),.comcon_out(comcon_out));</td><td class="desc-col"><span class="tag">DUT 例化</span>实例化被测核心模块 <code>SELECT</code>，将分频脉冲 <code>CLK25</code>、使能信号 <code>ENABLE</code>、地址与数据总线完整接入。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 3 -->
+  <section class="section-card" id="sec-3">
+    <div class="section-header">
+      <h2>3. 主时钟与 ENABLE / ADC_state 时序激励</h2>
+      <span class="line-range">Lines 25 – 48</span>
+    </div>
+    <div class="code-table-wrap">
+      <table class="code-table">
+        <thead>
+          <tr><th>行号</th><th>Verilog 代码</th><th>逐行功能解析</th></tr>
+        </thead>
+        <tbody>
+          <tr class="code-row"><td class="ln">25–29</td><td class="code-col"><span class="kw">always begin</span>
+     CLK = <span class="num">1'b1</span>;
+<span class="num">#50</span> CLK = <span class="num">1'b0</span>;
+<span class="num">#50</span>;
+<span class="kw">end</span></td><td class="desc-col"><span class="tag">时钟生成</span>产生周期 <code>100ns</code>（<strong>10 MHz</strong>）的方波主时钟 <code>CLK</code>。</td></tr>
+          <tr class="code-row"><td class="ln">31–34</td><td class="code-col"><span class="kw">initial fork</span>
+          POR = <span class="num">1'b0</span>;
+<span class="num">#300</span>   POR = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">上电复位</span>在 <code>t = 0ns</code> 拉低复位，<code>t = 300ns</code> 释放复位。</td></tr>
+          <tr class="code-row"><td class="ln">36–40</td><td class="code-col"><span class="kw">initial fork</span>
+          ENABLE = <span class="num">1'b0</span>;
+<span class="num">#2000</span>   ENABLE = <span class="num">1'b1</span>;
+<span class="num">#28000</span>  ENABLE = <span class="num">1'b0</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">通信使能窗口</span>初始 <code>ENABLE = 0</code>；在 <code>t = 2,000ns（2μs）</code> 拉高开启选通，持续 <code>26μs</code> 后于 <code>t = 28,000ns（28μs）</code> 拉低关闭，测试完整一帧数据传输后的关闭动作。</td></tr>
+          <tr class="code-row"><td class="ln">42–46</td><td class="code-col"><span class="kw">initial fork</span>
+          ADC_state = <span class="num">1'b1</span>;
+<span class="num">#1000</span>   ADC_state = <span class="num">1'b0</span>;
+<span class="num">#450000</span> ADC_state = <span class="num">1'b1</span>;
+<span class="kw">join</span></td><td class="desc-col"><span class="tag">ADC 状态控制</span>初始设 <code>ADC_state = 1</code>（模拟上电时 ADC 正在工作，锁定分频器）；在 <code>t = 1,000ns（1μs）</code> 拉低为 <code>0</code>（比 <code>ENABLE</code> 提前 1μs 释放分频器）；最后在 <code>t = 450,000ns（450μs）</code> 重新拉高。</td></tr>
+          <tr class="code-row"><td class="ln">48</td><td class="code-col"><span class="kw">endmodule</span></td><td class="desc-col"><span class="tag">模块结束</span>结束 <code>SELECT_tb</code> 模块定义。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="pager">
+    <a href="com_enable_guide.html">← 上一模块：COM_ENABLE_tb（通信使能）</a>
+    <a href="com_con_out_guide.html">下一模块：COM_CON_OUT_tb（光/电测量回传） →</a>
+  </div>
+</div>
+
+<footer>
+  BMI_digital_sakata 测试平台文档库 · SELECT_tb.v 逐行解析
+</footer>
+
+<script>
+  (function initTheme() {
+    if (localStorage.getItem('bmi_theme') === 'dark') {
+      document.body.classList.add('dark');
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = '☀️ 切换浅色模式';
+    }
+  })();
+
+  function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('bmi_theme', isDark ? 'dark' : 'light');
+    document.getElementById('themeToggle').textContent = isDark ? '☀️ 切换浅色模式' : '🌙 切换深色模式';
+  }
+
+  function filterRows() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const rows = document.querySelectorAll('tr.code-row');
+    const status = document.getElementById('filterStatus');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      if (!q || text.includes(q)) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (q) {
+      status.style.display = 'block';
+      status.textContent = `筛选条件 "${q}"：共匹配到 ${visibleCount} 条代码解析记录`;
+    } else {
+      status.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
